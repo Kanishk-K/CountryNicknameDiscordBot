@@ -10,9 +10,9 @@ import re
 #Setup these enviorment names with the variable name being the name in the quotes
 BOT_ID = os.environ.get('BOT_ID')
 #API_KEY = os.environ.get('API_KEY')
-GUILD_IDS = [715020961291698248]
-BASE_ROLE = 725785246867390517
-DEFAULT_NICKNAME_CHANNEL = "nickname_test"
+GUILD_IDS = [702020759803134023]
+BASE_ROLE = 702372853382643732
+DEFAULT_NICKNAME_CHANNEL = "portal"
 #URL = "https://api.jsonbin.io/b/5f47f33a514ec5112d0f825d"
 #headers = {'Content-Type': 'application/json','secret-key':API_KEY}
 
@@ -35,8 +35,7 @@ SpecialCharacterPattern = re.compile(r"^[_A-z0-9]*((-|\s)*[_A-z0-9])*$")
 @client.event
 async def on_ready():
     print('Bot is ready.')
-    LargeIMGUrl = "https://novacrypt.org/assets/images/novacrypt.png"
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="NOVACRYPT"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="NovaCrypt", large_image="primary"))
 
 @client.event
 async def on_member_join(member):
@@ -89,7 +88,7 @@ async def convert_error(ctx, error):
 @client.command(aliases=["nick","Nick","Nickname"])
 async def nickname(ctx, *, nickname):
     if len(nickname) <= 20 and SpecialCharacterPattern.match(nickname):
-        get_flag = await ctx.send(f"Okay {nickname}, react to this message with your country's flag.")
+        get_flag = await ctx.send(f"Okay {ctx.message.author.mention}, react to this message with your country's flag. \n[Tutorial: https://support.discord.com/hc/en-us/articles/360041139231-Adding-Emojis-and-Reactions#h_eea1a076-21c7-4554-b593-7fe750b63ef8]")
         def check(reaction,user):
             return user == ctx.message.author and user != client.user and reaction.emoji in data.keys()
 
@@ -110,18 +109,18 @@ async def nickname(ctx, *, nickname):
         if len(DIVISIONS) > 25:
             NumEmbeds = len(DIVISIONS)//25
             for i in range(NumEmbeds):
-                embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Key ~ (State Code):(State Name)", color=0x00b8ff)
+                embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Type the 2-3 letter code.", color=0x00b8ff)
                 for j in range(25*i,25+25*i):
                     embedVar.add_field(name=KEYS[j].replace(f'{USER_COUNTRY_ID}-',''), value=DIVISIONS[KEYS[j]], inline=True)
                 embeded_item = await ctx.send(embed=embedVar)
                 EMBEDS.append(embeded_item)
-            embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Key ~ (State Code):(State Name)", color=0x00b8ff)
+            embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Type the 2-3 letter code.", color=0x00b8ff)
             for j in range(25*NumEmbeds,len(USER_COUNTRY_INFO["divisions"])):
                 embedVar.add_field(name=KEYS[j].replace(f'{USER_COUNTRY_ID}-',''), value=DIVISIONS[KEYS[j]], inline=True)
             embeded_item = await ctx.send(embed=embedVar)
             EMBEDS.append(embeded_item)
         else:
-            embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Key ~ (State Code):(State Name)", color=0x00b8ff)
+            embedVar = discord.Embed(title=f"{USER_COUNTRY_NAME}", description="Type the 2-3 letter code.", color=0x00b8ff)
             for item in DIVISIONS:
                 embedVar.add_field(name=item.replace(f'{USER_COUNTRY_ID}-',''), value=DIVISIONS[item], inline=True)
             await ctx.send(embed=embedVar)
@@ -129,16 +128,16 @@ async def nickname(ctx, *, nickname):
 
         try:
             StateSelect = await client.wait_for("message", timeout=60.0, check=lambda message: message.author == ctx.author)
-            if len(StateSelect.content) <= 3 and USER_COUNTRY_ID+"-"+StateSelect.content in DIVISIONS.keys():
-                Complete_Nickname = f"{nickname} | {StateSelect.content} | {USER_COUNTRY_ID}"
+            if len(StateSelect.content) <= 3 and USER_COUNTRY_ID+"-"+StateSelect.content.upper() in DIVISIONS.keys():
+                Complete_Nickname = f"{nickname} | {StateSelect.content.upper()} | {USER_COUNTRY_ID}"
                 await ctx.message.author.edit(nick=Complete_Nickname)
                 await ctx.send(f"Sucess! Your nickname has successfully been changed to {Complete_Nickname}.")
                 for role in ctx.guild.roles:
                     if role.id == BASE_ROLE:
                         ADD_ROLE = role
-                await ctx.message.author.add_roles(ADD_ROLE,reason="Nickname Sucessfully Created")
+                await ctx.message.author.add_roles(ADD_ROLE,reason=f"Nickname Sucessfully Created [Nickname: {Complete_Nickname}]")
             else:
-                await ctx.send(f"Command was unsuccessful, make sure the Code matches the ones offered exactly.")
+                await ctx.send(f"Command was unsuccessful, make sure the Code matches the ones offered exactly. Terminating command.")
             for embed_item in EMBEDS:
                 await embed_item.delete()
             await State_Info.delete()
@@ -161,7 +160,7 @@ async def nickname_error(ctx, error):
 async def NicknameCollection():
     for ID in GUILD_IDS:
         guild = client.get_guild(ID)
-        guild_name_filtered = guild.name.split(".")[0]
+        guild_name_filtered = guild.name.split(" ")[0]
         src = os.path.join(os.getcwd(),"BaseGuildJson.json")
         dst = os.path.join(os.getcwd(),f"GuildFiles",f"{guild_name_filtered}.json")
         shutil.copyfile(src,dst)
@@ -173,7 +172,7 @@ async def NicknameCollection():
                 GuildMemberJSON[member.display_name[-2:]] = GuildMemberJSON[member.display_name[-2:]] + 1
             except KeyError:
                 pass
-                #print(f"Key not found for {member.display_name}. In {guild.name}")
+                print(f"Key not found for {member.display_name}. In {guild.name}")
         GuildMemberFile = open(f"GuildFiles/{guild_name_filtered}.json","w")
         json.dump(GuildMemberJSON,GuildMemberFile,indent=4)
         GuildMemberFile.close()
