@@ -42,7 +42,7 @@ async def on_member_join(member):
     print(f'{member.display_name} just joined')
     for channel in member.guild.channels:
         if channel.name == DEFAULT_NICKNAME_CHANNEL:
-            await channel.send(f'{member.display_name} please type `+nickname (Username)` to change your username')
+            await channel.send(f'{member.display_name} please type `+nickname (Username)` to change your username\nExample: `+nickname John`.')
 
 @client.command(pass_context=True)
 async def help(ctx):
@@ -83,20 +83,19 @@ async def convert_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f'Use this command to convert the tags from nicknames in the structure of `Nickname | [Region_Code] | [Country_Code]` to real locations.\nType `{ctx.prefix}convert (Country_Code) (Optional: Region_Code)`')
 
-
 #Allows the user to change their nickname.
 @client.command(aliases=["nick","Nick","Nickname"])
 async def nickname(ctx, *, nickname):
     if len(nickname) <= 20 and SpecialCharacterPattern.match(nickname):
-        get_flag = await ctx.send(f"Okay {ctx.message.author.mention}, react to this message with your country's flag. \n[Tutorial: https://support.discord.com/hc/en-us/articles/360041139231-Adding-Emojis-and-Reactions#h_eea1a076-21c7-4554-b593-7fe750b63ef8]")
+        get_flag = await ctx.send(f"Okay {ctx.message.author.mention}, **REACT** to this message with your country's flag. \n[Tutorial: https://support.discord.com/hc/en-us/articles/360041139231-Adding-Emojis-and-Reactions#h_eea1a076-21c7-4554-b593-7fe750b63ef8]")
         def check(reaction,user):
             return user == ctx.message.author and user != client.user and reaction.emoji in data.keys()
 
         try:
-            reaction, user = await client.wait_for("reaction_add",timeout=60.0,check=check)
+            reaction, user = await client.wait_for("reaction_add",timeout=120.0,check=check)
         except asyncio.TimeoutError:
             await get_flag.delete()
-            await ctx.send(f"{ctx.message.author.display_name} you did not respond with a valid flag in time, terminating command.")
+            await ctx.send(f"{ctx.message.author.display_name} you did not respond with a valid flag in time, terminating command. Please try again.")
 
         USER_COUNTRY_ID = data[reaction.emoji]
         USER_COUNTRY_INFO = Country_State_JSON[USER_COUNTRY_ID]
@@ -127,33 +126,33 @@ async def nickname(ctx, *, nickname):
 
 
         try:
-            StateSelect = await client.wait_for("message", timeout=60.0, check=lambda message: message.author == ctx.author)
+            StateSelect = await client.wait_for("message", timeout=120.0, check=lambda message: message.author == ctx.author)
             if len(StateSelect.content) <= 3 and USER_COUNTRY_ID+"-"+StateSelect.content.upper() in DIVISIONS.keys():
                 Complete_Nickname = f"{nickname} | {StateSelect.content.upper()} | {USER_COUNTRY_ID}"
                 await ctx.message.author.edit(nick=Complete_Nickname)
-                await ctx.send(f"Sucess! Your nickname has successfully been changed to {Complete_Nickname}.")
+                await ctx.send(f"Sucess! Your nickname has successfully been changed to {Complete_Nickname}. Welcome to NovaCrypt.")
                 for role in ctx.guild.roles:
                     if role.id == BASE_ROLE:
                         ADD_ROLE = role
                 await ctx.message.author.add_roles(ADD_ROLE,reason=f"Nickname Sucessfully Created [Nickname: {Complete_Nickname}]")
             else:
-                await ctx.send(f"Command was unsuccessful, make sure the Code matches the ones offered exactly. Terminating command.")
+                await ctx.send(f"Command was unsuccessful, make sure the Code matches the ones offered exactly. Terminating command. Please try again.")
             for embed_item in EMBEDS:
                 await embed_item.delete()
             await State_Info.delete()
         except asyncio.TimeoutError:
-            await ctx.send(f"{ctx.message.author.display_name} you did not respond with a valid Code in time, terminating command.")
+            await ctx.send(f"{ctx.message.author.display_name} you did not respond with a valid Code in time, terminating command. Please try again.")
             for embed_item in EMBEDS:
                 await embed_item.delete()
             await State_Info.delete()
     else:
-        await ctx.send("Your nickname is too long, please keep it within 20 letters. Special Characters (Excluding Spaces) are not permitted.")
+        await ctx.send("Your nickname is too long, please keep it within 20 letters. Special Characters are not permitted. Spaces are allowed. \nExample: `+nickname John`.")
 
 
 @nickname.error
 async def nickname_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f'Use this command to change your nickname, type `{ctx.prefix}nickname (Username)`')
+        await ctx.send(f'Use this command to change your nickname, type `{ctx.prefix}nickname (Username)`\nExample: `+nickname John`.')
 
 
 @tasks.loop(minutes=60.0)
