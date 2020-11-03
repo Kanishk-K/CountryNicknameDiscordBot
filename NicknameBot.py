@@ -104,7 +104,7 @@ async def nickname(ctx, *, nickname):
         KEYS = sorted(list(DIVISIONS))
         EMBEDS = []
         await get_flag.delete()
-        State_Info = await ctx.send(f'You stated that you live in {USER_COUNTRY_NAME}, please select a State/City/Province. Here are some valid codes.')
+        State_Info = await ctx.send(f'You stated that you live in {USER_COUNTRY_NAME}, please select a State/City/Province. Here are some valid codes.\n **Reminder that this is optional, select a random code if you\'re not comfortable sharing this information.**')
         if len(DIVISIONS) > 25:
             NumEmbeds = len(DIVISIONS)//25
             for i in range(NumEmbeds):
@@ -146,7 +146,7 @@ async def nickname(ctx, *, nickname):
                 await embed_item.delete()
             await State_Info.delete()
     else:
-        await ctx.send("Your nickname is too long, please keep it within 20 letters. Special Characters are not permitted. Spaces are allowed. \nExample: `+nickname John`.")
+        await ctx.send("Your nickname is too long, please keep it within 20 letters. Special Characters (For Example: !,@,#,$,|,\",\") are not permitted. Spaces are allowed. \nExample: `+nickname John`.")
 
 
 @nickname.error
